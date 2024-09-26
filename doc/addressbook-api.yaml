@@ -1,0 +1,149 @@
+openapi: 3.1.0
+info:
+  title: Address Book API
+  description: API for managing address book entries.
+  version: "0.1.0"
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+tags:
+  - name: address
+    description: 住所録エントリー    
+paths:
+  /address/:
+    post:
+      summary: 住所録エントリー作成
+      operationId: createAddress
+      tags:
+        - address      
+      requestBody:
+        description: 対象住所録エントリー登録データ
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressEntry'
+      responses:
+        '200':
+          description: 住所録エントリー登録の成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressEntry'
+        '400':
+          description: No. already exists              
+    get:
+      summary: 全住所録エントリー取得
+      operationId: getAllAddresses
+      tags:
+        - address         
+      responses:
+        '200':
+          description: 住所録エントリーリストの取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AddressEntry'
+  /address/{entry_no}:
+    get:
+      summary: No.を指定した住所録エントリー取得
+      operationId: getAddress
+      tags:
+        - address         
+      parameters:
+        - name: entry_no
+          in: path
+          required: true
+          description: 対象住所録エントリーのNo.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 住所録エントリー取得の成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressEntry'
+        '404':
+          description: Entry not found
+    put:
+      summary: No.を指定した住所録エントリー更新
+      operationId: updateAddress
+      tags:
+        - address         
+      parameters:
+        - name: entry_no
+          in: path
+          required: true
+          description: 対象住所録エントリーのNo.
+          schema:
+            type: string
+      requestBody:
+        description: 対象住所録エントリー更新データ
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressEntry'
+      responses:
+        '200':
+          description: 住所録エントリー更新の成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressEntry'
+        '404':
+          description: Entry not found
+    delete:
+      summary: No.を指定した住所録エントリー取得削除
+      operationId: deleteAddress
+      tags:
+        - address   
+      parameters:
+        - name: entry_no
+          in: path
+          required: true
+          description: 対象住所録エントリーのNo.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 住所録エントリー削除の成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressEntry'
+        '404':
+          description: Entry not found
+components:
+  schemas:
+    AddressEntry:
+      type: object
+      properties:
+        no:
+          type: integer
+          description: 住所録エントリーの番号（一意）
+          examples: 
+            - 1
+        name:
+          type: string
+          description: 氏名
+          examples: 
+            - John Doe
+        address:
+          type: string
+          description: 住所
+          examples: 
+            - 123 Main St, Springfield
+        phone_number:
+          type: string
+          description: 電話番号
+          examples: 
+            - +1-555-555-5555
+      required:
+        - id
+        - name
+        - address
+        - phone_number
