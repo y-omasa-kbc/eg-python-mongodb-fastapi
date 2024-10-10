@@ -3,8 +3,11 @@ from typing import List
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.concurrency import asynccontextmanager
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pymongo import MongoClient
+
+
 
 load_dotenv(verbose=True)
 
@@ -31,6 +34,17 @@ async def lifespan(app: FastAPI):
         yield
     
 app = FastAPI(lifespan=lifespan)
+
+# CORSミドルウェアの追加
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # すべてのオリジンを許可
+    allow_credentials=True,
+    allow_methods=["*"],  # すべてのHTTPメソッドを許可
+    allow_headers=["*"],  # すべてのヘッダーを許可
+)
+
+
 
 # Create - 新しい住所録エントリーを作成
 @app.post("/address/", response_model=AddressEntry)
