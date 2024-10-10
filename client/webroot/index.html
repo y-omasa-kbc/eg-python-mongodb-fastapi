@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>住所録APIテストクライアント</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">住所録APIテストクライアント</h1>
+
+        <!-- Create/Edit Address Entry Form -->
+        <div class="card mb-4">
+            <div class="card-header" id="formHeader">新しい住所録エントリーを作成</div>
+            <div class="card-body">
+                <form id="createForm">
+                    <input type="hidden" id="entryId">
+                    <div class="form-group">
+                        <label for="createNo">No</label>
+                        <input type="number" class="form-control" id="createNo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="createName">名前</label>
+                        <input type="text" class="form-control" id="createName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="createAddress">住所</label>
+                        <input type="text" class="form-control" id="createAddress" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="createPhoneNumber">電話番号</label>
+                        <input type="text" class="form-control" id="createPhoneNumber" required>
+                    </div>
+                    <button type="button" class="btn btn-primary" id="submitButton" onclick="createAddress()">作成</button>
+                    <button type="button" class="btn btn-secondary" id="cancelEdit" style="display: none;" onclick="resetForm()">キャンセル</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Address List -->
+        <div class="card mb-4">
+            <div class="card-header">住所録エントリー一覧</div>
+            <div class="card-body">
+                <button class="btn btn-secondary mb-3" onclick="fetchAllAddresses()">更新</button>
+                <ul class="list-group" id="addressList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = "http://localhost:8000";
+
+        // 新しい住所録エントリーを作成
+        async function createAddress() {
+            const data = {
+                no: parseInt(document.getElementById("createNo").value, 10),
+                name: document.getElementById("createName").value,
+                address: document.getElementById("createAddress").value,
+                phone_number: document.getElementById("createPhoneNumber").value
+            };
+
+            try {
+                const response = await fetch(`${apiUrl}/address/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert("住所録エントリーが作成されました");
+                    resetForm();
+                    fetchAllAddresses();
+                } else {
+                    const errorData = await response.json();
+                    alert("エントリーの作成に失敗しました: " + errorData.detail);
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("エントリーの作成に失敗しました");
+            }
+        }
+
+        // 住所録エントリーを更新
+        async function updateAddress() {
+            const entryId = document.getElementById("entryId").value;
+            const data = {
+                no: parseInt(document.getElementById("createNo").value, 10),
+                name: document.getElementById("createName").value,
+                address: document.getElementById("createAddress").value,
+                phone_number: document.getElementById("createPhoneNumber").value
+            };
+
+            try {
+                const response = await fetch(`${apiUrl}/address/${data.no}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert("住所録エントリーが更新されました");
+                    resetForm();
+                    fetchAllAddresses();
+                } else {
+                    const errorData = await response.json();
+                    alert("エントリーの更新に失敗しました: " + errorData.detail);
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("エントリーの更新に失敗しました");
+            }
+        }
+
+        // フォームをリセット
+        function resetForm() {
+            document.getElementById("entryId").value = "";
+            document.getElementById("createNo").value = "";
+            document.getElementById("createName").value = "";
+            document.getElementById("createAddress").value = "";
+            document.getElementById("createPhoneNumber").value = "";
+            document.getElementById("formHeader").textContent = "新しい住所録エントリーを作成";
+            document.getElementById("submitButton").textContent = "作成";
+            document.getElementById("submitButton").onclick = createAddress;
+            document.getElementById("cancelEdit").style.display = "none";
+        }
+
+        // すべての住所録エントリーを取得
+        async function fetchAllAddresses() {
+            try {
+                const response = await fetch(`${apiUrl}/address/`);
+                if (response.ok) {
+                    const entries = await response.json();
+                    const addressList = document.getElementById("addressList");
+                    addressList.innerHTML = "";
+
+                    entries.forEach(entry => {
+                        const listItem = document.createElement("li");
+                        listItem.className = "list-group-item";
+                        listItem.innerHTML = `
+                            <strong>No: ${entry.no}</strong><br>
+                            名前: ${entry.name}<br>
+                            住所: ${entry.address}<br>
+                            電話番号: ${entry.phone_number}<br>
+                            <button class="btn btn-danger btn-sm mt-2" onclick="deleteAddress('${entry.no}')">削除</button>
+                            <button class="btn btn-info btn-sm mt-2" onclick="editAddress('${entry.no}')">編集</button>
+                        `;
+                        addressList.appendChild(listItem);
+                    });
+                } else {
+                    alert("住所録エントリーの取得に失敗しました");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("住所録エントリーの取得に失敗しました");
+            }
+        }
+
+        // 住所録エントリーを編集
+        async function editAddress(id) {
+            try {
+                const response = await fetch(`${apiUrl}/address/${id}`);
+                if (response.ok) {
+                    const entry = await response.json();
+                    document.getElementById("entryId").value = entry.id;
+                    document.getElementById("createNo").value = entry.no;
+                    document.getElementById("createName").value = entry.name;
+                    document.getElementById("createAddress").value = entry.address;
+                    document.getElementById("createPhoneNumber").value = entry.phone_number;
+                    document.getElementById("formHeader").textContent = "エントリーの編集";
+                    document.getElementById("submitButton").textContent = "更新";
+                    document.getElementById("submitButton").onclick = updateAddress;
+                    document.getElementById("cancelEdit").style.display = "block";
+                } else {
+                    alert("エントリーの取得に失敗しました");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("エントリーの取得に失敗しました");
+            }
+        }
+
+        // 住所録エントリーを削除
+        async function deleteAddress(id) {
+            if (confirm("このエントリーを削除してもよろしいですか？")) {
+                try {
+                    const response = await fetch(`${apiUrl}/address/${id}`, {
+                        method: "DELETE"
+                    });
+
+                    if (response.ok) {
+                        alert("住所録エントリーが削除されました");
+                        fetchAllAddresses();
+                    } else {
+                        alert("エントリーの削除に失敗しました");
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("エントリーの削除に失敗しました");
+                }
+            }
+        }
+
+        // 初回読み込み時に住所録エントリーを取得
+        document.addEventListener("DOMContentLoaded", function() {
+            fetchAllAddresses();
+        });
+    </script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

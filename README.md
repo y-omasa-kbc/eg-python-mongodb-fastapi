@@ -96,6 +96,9 @@ APIの詳細な仕様は `doc/addressbook-api.yaml` に記載されています�
 ├── requirements.txt            # Python依存関係
 ├── .env                        # 環境変数
 ├── docker-compose.yml          # MongoDBコンテナ起動用
+└── client
+    └── webroot                 # テストクライアントを公開するWebサーバコンテナ
+        └── index.html          # テストクライアント
 ├── README.md                   # プロジェクトのドキュメント
 └── doc
     └── addressbook-api.yaml    # API仕様のOpenAPIドキュメント
@@ -112,7 +115,10 @@ APIの詳細な仕様は `doc/addressbook-api.yaml` に記載されています�
 
 ## テストの実行
 
-テストの実行方法については、後ほど記載します（TBD）。
+テストクライアント
+docker composeでコンテナを起動後、ブラウザで
+[http://localhost:8080](http://localhost:8080)
+にアクセスすることで、テスト用クライアントが利用できる。
 
 ## ライセンス
 

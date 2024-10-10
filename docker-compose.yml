@@ -28,6 +28,15 @@ services:
     depends_on:
       - mongo
 
+  client:
+    image: nginx:latest
+    container_name: client
+    ports:
+      - "8080:80"
+    volumes:
+      - ./client/webroot:/usr/share/nginx/html:ro
+    restart: unless-stopped
+
 volumes:
   mongodb_data:
  
